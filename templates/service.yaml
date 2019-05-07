@@ -39,7 +39,7 @@ Resources:
     Properties:
       LoadBalancerArn: !Ref LoadBalancer
       Port: !Ref Port
-      Protocol: HTTP
+      Protocol: TCP
       DefaultActions:
         - Type: forward
           TargetGroupArn: !Ref TargetGroup
@@ -49,17 +49,16 @@ Resources:
     Properties:
       VpcId: !Ref VpcId
       Port: !Ref Port
-      Protocol: HTTP
-      Matcher:
-        HttpCode: 200-299
-      HealthCheckIntervalSeconds: 10
+      Protocol: TCP
+      TargetType: ip
+      HealthCheckIntervalSeconds: 30
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 2
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
-          Value: 30
+          Value: "120"
       Tags:
         - Key: Identifier
           Value: !Ref Identifier
@@ -67,19 +66,6 @@ Resources:
           Value: !Ref Tag
         - Key: IsProduction
           Value: !Ref IsProduction
-
-  ListenerRule:
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    Properties:
-      Actions:
-        - Type: forward
-          TargetGroupArn: !Ref TargetGroup
-      Conditions:
-        - Field: path-pattern
-          Values:
-          - "*"
-      ListenerArn: !Ref LoadBalancerListener
-      Priority: 1
 
   ECSServiceRole:
     Type: AWS::IAM::Role
@@ -113,6 +99,7 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       #Family: !Sub ${AWS::StackName}-simple-app
+      NetworkMode: awsvpc
       ContainerDefinitions:
         - Name: simple-app
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}:${Tag}

@@ -1,14 +1,17 @@
 #!/bin/bash
 
 set -o errexit -o xtrace
-echo -n "Enter S3 Bucket to host the templates and scripts > "
-read bucket
+#echo -n "Enter S3 Bucket to host the templates and scripts > "
+#read bucket
+bucket=dsshw-stuff
 echo -n "Enter stackname to create or update the stack > "
 read stackname
-echo -n "Enter GitHub User > "
-read GitHubUser
-echo -n "Enter GitHubToken > "
-read GitHubToken
+#echo -n "Enter GitHub User > "
+#read GitHubUser
+GitHubUser=techdad
+#echo -n "Enter GitHubToken > "
+#read GitHubToken
+GitHubToken=
 
 zip deploy/templates.zip ecs-blue-green-deployment.yaml templates/*
 cd scripts && zip scripts.zip * && cd ..
